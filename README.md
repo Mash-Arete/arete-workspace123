@@ -1,70 +1,171 @@
-# Getting Started with Create React App
+# Arete Workspace
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A modern workspace booking platform built with Next.js 14, Tailwind CSS, and Supabase.
 
-## Available Scripts
+## Features
 
-In the project directory, you can run:
+- 🏢 Browse and book workspaces, meeting rooms, and virtual offices
+- 🗺️ Interactive map integration with Mapbox
+- 📅 Real-time availability calendar
+- 💳 Secure payment processing with Stripe
+- 🔐 User authentication with Supabase
+- 📱 Fully responsive design
+- 🎨 Modern UI with Framer Motion animations
+- ⭐ Review and rating system
 
-### `npm start`
+## Tech Stack
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- **Frontend:**
+  - Next.js 14 (App Router)
+  - TypeScript
+  - Tailwind CSS
+  - Shadcn/ui components
+  - Framer Motion
+  - Lucide Icons
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+- **Backend:**
+  - Supabase (Auth, Database, Storage)
+  - Stripe (Payments)
+  - Mapbox (Maps)
+  - Google Places API (Location search)
 
-### `npm test`
+## Prerequisites
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- Node.js 18.17 or later
+- npm or yarn
+- Supabase account
+- Stripe account
+- Mapbox account
+- Google Cloud account (for Places API)
 
-### `npm run build`
+## Environment Variables
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Create a `.env.local` file in the root directory with the following variables:
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```env
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+# Stripe
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
+STRIPE_SECRET_KEY=your_stripe_secret_key
 
-### `npm run eject`
+# Mapbox
+NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN=your_mapbox_access_token
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+# Google Places API
+NEXT_PUBLIC_GOOGLE_PLACES_API_KEY=your_google_places_api_key
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## Getting Started
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/arete-workspace.git
+   cd arete-workspace
+   ```
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+2. Install dependencies:
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
 
-## Learn More
+3. Set up your environment variables as described above.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+4. Run the development server:
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+   ```
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+5. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-### Code Splitting
+## Project Structure
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+```
+src/
+├── app/                    # Next.js app router pages
+│   ├── auth/              # Authentication pages
+│   ├── dashboard/         # User dashboard
+│   ├── workspaces/        # Workspace listings and details
+│   └── bookings/          # Booking management
+├── components/            # Reusable components
+│   ├── ui/               # UI components
+│   ├── layout/           # Layout components
+│   ├── workspaces/       # Workspace-related components
+│   └── bookings/         # Booking-related components
+├── lib/                  # Utility functions and configurations
+│   ├── supabase/        # Supabase client and helpers
+│   ├── stripe/          # Stripe integration
+│   └── utils/           # Utility functions
+└── types/               # TypeScript type definitions
+```
 
-### Analyzing the Bundle Size
+## Database Schema
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+### Workspaces
+```sql
+create table workspaces (
+  id uuid default uuid_generate_v4() primary key,
+  title text not null,
+  description text,
+  location text not null,
+  price decimal not null,
+  capacity integer not null,
+  amenities jsonb,
+  images text[],
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+```
 
-### Making a Progressive Web App
+### Bookings
+```sql
+create table bookings (
+  id uuid default uuid_generate_v4() primary key,
+  user_id uuid references auth.users not null,
+  workspace_id uuid references workspaces not null,
+  start_date timestamp with time zone not null,
+  end_date timestamp with time zone not null,
+  status text not null,
+  total_price decimal not null,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+### Reviews
+```sql
+create table reviews (
+  id uuid default uuid_generate_v4() primary key,
+  user_id uuid references auth.users not null,
+  workspace_id uuid references workspaces not null,
+  rating integer not null,
+  comment text,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+```
 
-### Advanced Configuration
+## Contributing
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-### Deployment
+## License
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-### `npm run build` fails to minify
+## Acknowledgments
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+- [Next.js](https://nextjs.org/)
+- [Tailwind CSS](https://tailwindcss.com/)
+- [Supabase](https://supabase.com/)
+- [Stripe](https://stripe.com/)
+- [Mapbox](https://www.mapbox.com/)
+- [Framer Motion](https://www.framer.com/motion/)
+- [Lucide Icons](https://lucide.dev/)
